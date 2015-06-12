@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+var async = require('async')
 var http = require('http')
 
 var urls = [process.argv[2],process.argv[3],process.argv[4]]
@@ -28,33 +29,34 @@ var contents = ['','','']
 
 var quantity = 0
 
-urls.forEach(function(url)
+function read_url(url, callback)
 {
-    var index = quantity
-    quantity += 1
+    var page_content = ''
 
     http.get(url, function(response)
     {
         response.setEncoding('utf8')
         response.on('data',function(data)
         {
-            contents[index] += data
+            page_content += data
         })
-        response.on('error',console.error)
+        response.on('error',function(err){
+            callback(err)
+        })
         response.on('end',function(data)
         {
-            var print = true
-            contents.forEach(function(content){
-                if(content.length == 0)
-                    print = false
-            })
-
-            if(print)
-            {
-                console.log(contents[0])
-                console.log(contents[1])
-                console.log(contents[2])
-            }
+            callback(null,page_content)
         })
     })
-})
+}
+
+async.map(urls, read_url, function(err, results){
+    if(err)
+    {
+        console.error('Error! > ',err)
+    }
+
+    results.forEach(function(result){
+        console.log(result)
+    })
+});
