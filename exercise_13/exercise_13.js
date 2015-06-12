@@ -21,31 +21,49 @@
 // SOFTWARE.
 
 var http = require('http')
+var url = require('url')
+
+function parsetime(time)
+{
+    return {
+        hour: time.getHours(),
+        minute: time.getMinutes(),
+        second: time.getSeconds()
+    }
+}
+
+function unixtime(time)
+{
+    return { unixtime: time.getTime() }
+}
 
 var server = http.createServer(function(request,response){
-    switch(request.url)
+    if(request.method === 'GET')
     {
-        case '/':
-            if(request.method === 'POST')
-            {
-                response.writeHead(200,{'content-type':'text/plain'})
-                request.on('data',function(chunk){
-                    console.log(chunk.toString().toUpperCase())
-                    response.write(chunk.toString().toUpperCase())
-                })
-                request.on('end',function(data){
-                    response.end()
-                })
-            }
-            else
-            {
-                console.log('ERROR! Method: ',request.method)
-            }
-            break;
-        default:
-            response.writeHead(400,{'content-type':'text/plain'})
-            response.end()
-            console.log('ERROR! Url: ',request.url)
+        var parsed_url = url.parse(request.url,true)
+        var query = parsed_url.query
+        var ISODateTime = new Date(query.iso)
+        var formatted_datetime = ''
+
+        switch(parsed_url.pathname)
+        {
+            case '/api/parsetime':        
+                formatted_datetime = JSON.stringify(parsetime(ISODateTime))
+                break;
+            case '/api/unixtime':
+                formatted_datetime = JSON.stringify(unixtime(ISODateTime))
+                break;
+            default:
+                response.writeHead(404,{'content-type':'text/plain'})
+                response.end()
+                return
+        }
+        response.end(formatted_datetime)
+    }
+    else
+    {
+        response.writeHead(404,{'content-type':'text/plain'})
+        response.end("Not found")
     }
 })
 
