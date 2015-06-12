@@ -31,17 +31,11 @@ module.exports = function(search_path,file_extension,callback){
         }
 
         var extension = '.' + file_extension
-        var files = []
 
-        for (var i = 0; i < file_list.length; i++) {
-            var current_extension = path.extname(file_list[i])
+        file_list = file_list.filter(function(file){
+            return path.extname(file) === extension
+        })
 
-            if(current_extension === extension)
-            {
-                files.push(file_list[i])
-            }
-        };
-
-        callback(null,files)
+        callback(null,file_list)
     })
 }

@@ -25,12 +25,11 @@ var file_lister = require('./file_lister.js')
 file_lister(process.argv[2],process.argv[3],function(err,files){
     if(err)
     {
-        return
+        return console.error('Error! > ',err)
     }
 
-    for (var i = 0; i < files.length; i++) {
-        console.log(files[i])
-    };
-    
+    files.forEach(function(file){
+        console.log(file)
+    })
 })
 
